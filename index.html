@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#f7f6f3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1a1a19" media="(prefers-color-scheme: dark)">
+<title>Chi tiêu tháng</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<style>
+:root{--bg:#f7f6f3;--surface-1:#efede8;--surface-2:#fff;--border:rgba(0,0,0,.1);--border-strong:rgba(0,0,0,.18);--border-stronger:rgba(0,0,0,.4);
+--text-primary:#1f1f1d;--text-secondary:#6b6a66;--text-success:#3b6d11;--text-danger:#a32d2d;--text-warning:#854f0b;--text-accent:#185fa5;
+--bg-accent:#e6f1fb;--border-accent:#85b7eb;--fill-primary:#1f1f1d;--on-primary:#fff;--fill-success:#639922;--fill-warning:#ef9f27;--fill-danger:#e24b4a;--radius:8px}
+@media (prefers-color-scheme:dark){:root{--bg:#1a1a19;--surface-1:#252524;--surface-2:#2c2c2a;--border:rgba(255,255,255,.1);--border-strong:rgba(255,255,255,.2);--border-stronger:rgba(255,255,255,.45);
+--text-primary:#f1efe8;--text-secondary:#a8a69f;--text-success:#97c459;--text-danger:#f09595;--text-warning:#fac775;--text-accent:#85b7eb;
+--bg-accent:#0c447c;--border-accent:#378add;--fill-primary:#f1efe8;--on-primary:#1a1a19}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text-primary);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:16px;-webkit-tap-highlight-color:transparent}
+button,input{font:inherit;color:inherit}
+button{height:36px;padding:0 12px;background:transparent;border:0.5px solid var(--border-strong);border-radius:var(--radius);cursor:pointer}
+button:active{transform:scale(.98)}
+input{height:40px;padding:0 10px;background:var(--surface-2);border:0.5px solid var(--border-strong);border-radius:var(--radius);outline:none}
+input:focus{border-color:var(--border-accent)}
+.wrap{max-width:420px;margin:0 auto;padding:1rem}
+.card{background:var(--surface-2);border:0.5px solid var(--border);border-radius:12px;padding:1rem 1.25rem;margin-bottom:12px}
+.lbl{font-size:13px;color:var(--text-secondary)}
+.seg{display:flex;gap:6px}.seg button{flex:1}
+.seg button.on{background:var(--surface-1);border-color:var(--border-stronger);font-weight:500}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.chips button{font-size:13px;padding:4px 10px;height:auto}
+.chips button.on{background:var(--bg-accent);color:var(--text-accent);border-color:var(--border-accent)}
+.row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--border);font-size:14px}
+.bar{height:6px;background:var(--surface-1);border-radius:3px;overflow:hidden;margin-top:6px}
+.bar div{height:100%;border-radius:3px}
+.tip{display:flex;gap:10px;font-size:14px;line-height:1.5;padding:8px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+<button id="prev" aria-label="Tháng trước"><i class="ti ti-chevron-left"></i></button>
+<span id="mlabel" style="font-weight:500"></span>
+<button id="next" aria-label="Tháng sau"><i class="ti ti-chevron-right"></i></button>
+</div>
+<div style="background:var(--surface-1);border-radius:12px;padding:1rem 1.25rem;margin-bottom:12px">
+<div class="lbl">Số dư tháng này</div>
+<div id="bal" style="font-size:28px;font-weight:500">0 ₫</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;font-size:14px">
+<div><span class="lbl">Thu</span><br><span id="tin" style="color:var(--text-success);font-weight:500">0</span></div>
+<div><span class="lbl">Chi</span><br><span id="tout" style="color:var(--text-danger);font-weight:500">0</span></div>
+</div>
+<div style="margin-top:10px;display:flex;align-items:center;gap:8px">
+<span class="lbl" style="white-space:nowrap">Ngân sách chi</span>
+<input id="budget" inputmode="numeric" placeholder="Mặc định = tổng thu" style="flex:1;min-width:0">
+</div>
+</div>
+<div class="card">
+<div class="seg"><button id="tOut" class="on">Tiền ra</button><button id="tIn">Tiền vào</button></div>
+<input id="amt" inputmode="decimal" placeholder="50k, 1.5tr, 120000" style="width:100%;margin-top:10px;font-size:18px">
+<div id="err" style="font-size:13px;color:var(--text-danger)"></div>
+<div class="chips" id="quick"></div>
+<div class="chips" id="cats"></div>
+<div style="display:flex;gap:8px">
+<input id="date" type="date" style="flex:1;min-width:0">
+<input id="note" placeholder="Ghi chú" style="flex:1;min-width:0">
+</div>
+<button id="add" style="width:100%;margin-top:10px;height:44px;background:var(--fill-primary);color:var(--on-primary);border:none"><i class="ti ti-plus"></i> Thêm</button>
+</div>
+<div class="card">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-weight:500">Hôm nay</span><span class="lbl" id="todayLbl"></span></div>
+<div id="todayInfo" style="font-size:14px;margin-top:6px"></div>
+</div>
+<div class="card"><div style="font-weight:500;margin-bottom:4px">Quỹ mỗi tuần</div><div id="weeks"></div></div>
+<div class="card"><div style="font-weight:500;margin-bottom:4px"><i class="ti ti-bulb" style="color:var(--text-warning)"></i> Đề xuất cho bạn</div><div id="tips"></div></div>
+<div class="card"><div style="font-weight:500;margin-bottom:4px">Giao dịch</div><div id="list"></div></div>
+</div>
+<script>
+const KEY='chitieu_v1';let mem={tx:[],budget:{}};
+try{const s=localStorage.getItem(KEY);if(s)mem=JSON.parse(s)}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(mem))}catch(e){}};
+const CO=['Ăn uống','Di chuyển','Mua sắm','Hóa đơn','Giải trí','Khác'],CI=['Lương','Thưởng','Làm thêm','Khác'];
+let type='out',cat=CO[0],now=new Date(),vm=new Date(now.getFullYear(),now.getMonth(),1);
+const $=id=>document.getElementById(id);
+const f=n=>Math.round(n).toLocaleString('vi-VN')+' ₫';
+const fs=n=>{const a=Math.abs(n),s=n<0?'-':'';return a>=1e6?s+(a/1e6).toFixed(1).replace('.0','')+'tr':a>=1e3?s+Math.round(a/1e3)+'k':s+Math.round(a)};
+const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+function parse(v){v=v.toLowerCase().replace(/\s/g,'').replace(',','.');let m=1;
+if(/(tr|m)$/.test(v)){m=1e6;v=v.replace(/(tr|m)$/,'')}else if(/k$/.test(v)){m=1e3;v=v.replace(/k$/,'')}else v=v.replace(/\./g,'');
+const n=parseFloat(v)*m;return isFinite(n)&&n>0?Math.round(n):null}
+function chips(){const c=type==='out'?CO:CI;if(!c.includes(cat))cat=c[0];
+$('cats').innerHTML=c.map(x=>`<button class="${x===cat?'on':''}" data-c="${x}">${x}</button>`).join('');
+$('quick').innerHTML=(type==='out'?[20e3,50e3,100e3,200e3]:[500e3,1e6,5e6]).map(x=>`<button data-q="${x}">+${fs(x)}</button>`).join('')}
+$('cats').onclick=e=>{const b=e.target.closest('button');if(b){cat=b.dataset.c;chips()}};
+$('quick').onclick=e=>{const b=e.target.closest('button');if(b){$('amt').value=((parse($('amt').value)||0)+ +b.dataset.q).toLocaleString('vi-VN');$('err').textContent=''}};
+$('tOut').onclick=()=>{type='out';$('tOut').classList.add('on');$('tIn').classList.remove('on');chips()};
+$('tIn').onclick=()=>{type='in';$('tIn').classList.add('on');$('tOut').classList.remove('on');chips()};
+$('amt').oninput=()=>$('err').textContent='';
+$('add').onclick=()=>{const a=parse($('amt').value);if(!a){$('err').textContent='Nhập số tiền hợp lệ, ví dụ 50k';return}
+mem.tx.push({id:Date.now(),type,amt:a,cat,date:$('date').value||iso(now),note:$('note').value.trim()});
+$('amt').value='';$('note').value='';save();render()};
+$('list').onclick=e=>{const b=e.target.closest('[data-del]');if(b&&confirm('Xóa giao dịch này?')){mem.tx=mem.tx.filter(t=>t.id!=b.dataset.del);save();render()}};
+$('budget').onchange=()=>{const k=mk(),v=parse($('budget').value);if(v)mem.budget[k]=v;else delete mem.budget[k];save();render()};
+$('prev').onclick=()=>{vm.setMonth(vm.getMonth()-1);render()};$('next').onclick=()=>{vm.setMonth(vm.getMonth()+1);render()};
+const mk=()=>vm.getFullYear()+'-'+String(vm.getMonth()+1).padStart(2,'0');
+function render(){now=new Date();const k=mk(),y=vm.getFullYear(),m=vm.getMonth(),dim=new Date(y,m+1,0).getDate();
+$('mlabel').textContent='Tháng '+(m+1)+'/'+y;
+const tx=mem.tx.filter(t=>t.date.startsWith(k)).sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);
+const tin=tx.filter(t=>t.type==='in').reduce((s,t)=>s+t.amt,0),out=tx.filter(t=>t.type==='out'),tout=out.reduce((s,t)=>s+t.amt,0);
+const budget=mem.budget[k]||tin;$('budget').value=mem.budget[k]?mem.budget[k].toLocaleString('vi-VN'):'';
+$('tin').textContent=f(tin);$('tout').textContent=f(tout);$('bal').textContent=f(tin-tout);
+$('bal').style.color=tin-tout<0?'var(--text-danger)':'var(--text-primary)';
+const isCur=y===now.getFullYear()&&m===now.getMonth(),past=vm<new Date(now.getFullYear(),now.getMonth(),1);
+const today=isCur?now.getDate():past?dim:0,daysLeft=Math.max(dim-today+1,1),remain=budget-tout;
+if(!$('date').value||!$('date').value.startsWith(k))$('date').value=isCur?iso(now):k+'-01';
+const spentDay=d=>out.filter(t=>+t.date.slice(8)===d).reduce((s,t)=>s+t.amt,0);
+const spentBefore=out.filter(t=>+t.date.slice(8)<today).reduce((s,t)=>s+t.amt,0);
+const dailyAllow=isCur?Math.max((budget-spentBefore)/daysLeft,0):budget/dim,todaySpent=isCur?spentDay(today):0;
+$('todayLbl').textContent=isCur?'còn '+daysLeft+' ngày':'';
+if(isCur){const r=dailyAllow-todaySpent,p=dailyAllow?Math.min(todaySpent/dailyAllow*100,100):0;
+$('todayInfo').innerHTML=`<div class="row" style="border:none;padding:0"><span>Đã chi ${f(todaySpent)}</span><span style="color:${r<0?'var(--text-danger)':'var(--text-success)'};font-weight:500">${r<0?'Vượt ':'Còn '}${f(Math.abs(r))}</span></div><div class="bar"><div style="width:${p}%;background:${r<0?'var(--fill-danger)':'var(--fill-success)'}"></div></div><div class="lbl" style="margin-top:6px">Hạn mức hôm nay: ${f(dailyAllow)}</div>`}
+else $('todayInfo').innerHTML=`<span class="lbl">Trung bình mỗi ngày: ${f(tout/dim)}</span>`;
+const wk=[[1,7],[8,14],[15,21],[22,dim]];let curW=-1;
+$('weeks').innerHTML=wk.map(([a,b],i)=>{const al=budget*(b-a+1)/dim,sp=out.filter(t=>{const d=+t.date.slice(8);return d>=a&&d<=b}).reduce((s,t)=>s+t.amt,0),r=al-sp,p=al?Math.min(sp/al*100,100):0;
+if(isCur&&today>=a&&today<=b)curW=i;const c=r<0?'var(--fill-danger)':p>80?'var(--fill-warning)':'var(--fill-success)';
+return `<div style="padding:8px 0;${i<3?'border-bottom:0.5px solid var(--border)':''}"><div style="display:flex;justify-content:space-between;font-size:14px"><span${curW===i?' style="font-weight:500"':''}>Tuần ${i+1} <span class="lbl">(${a}–${b})</span></span><span style="color:${r<0?'var(--text-danger)':'var(--text-primary)'};font-weight:500">${r<0?'Vượt ':'Còn '}${fs(Math.abs(r))}</span></div><div class="bar"><div style="width:${p}%;background:${c}"></div></div><div class="lbl" style="margin-top:4px;font-size:12px">Quỹ ${fs(al)} · đã chi ${fs(sp)}</div></div>`}).join('');
+const tips=[],T=(ic,col,t)=>tips.push(`<div class="tip"><i class="ti ti-${ic}" style="color:var(--text-${col});font-size:18px;margin-top:2px"></i><span>${t}</span></div>`);
+if(!budget)T('wallet','accent','Nhập khoản tiền vào đầu tiên (lương, thưởng) hoặc đặt ngân sách chi để công cụ tính quỹ tuần và hạn mức ngày.');
+else{
+if(remain<0)T('alert-triangle','danger',`Bạn đã vượt ngân sách ${f(-remain)}. Thử tạm dừng các khoản Mua sắm và Giải trí đến hết tháng.`);
+else if(isCur){T('calendar','accent',`Còn ${f(remain)} cho ${daysLeft} ngày, tức khoảng ${f(remain/daysLeft)}/ngày.`);
+const food=remain/daysLeft*0.6;if(food>0)T('tools-kitchen-2','success',`Gợi ý ăn uống: khoảng ${fs(food/3)}/bữa để vẫn còn dư cho các khoản khác.`)}
+if(isCur&&today>3){const avg=spentBefore/(today-1),proj=avg*dim;
+if(proj>budget*1.05)T('trending-up','warning',`Với tốc độ ${fs(avg)}/ngày, cuối tháng bạn sẽ chi khoảng ${f(proj)}, vượt ${f(proj-budget)}. Hãy giảm xuống ${fs(Math.max(remain/daysLeft,0))}/ngày.`);
+else if(proj<budget*0.85)T('pig-money','success',`Bạn đang chi ít hơn kế hoạch. Có thể chuyển trước ${f(Math.round((budget-proj)*0.5/1e4)*1e4)} vào tiết kiệm.`)}
+if(isCur&&todaySpent>dailyAllow&&dailyAllow>0)T('clock','warning','Hôm nay đã vượt hạn mức. Ngày mai thử nấu ăn ở nhà để cân bằng lại.');
+if(curW>=0){const [a,b]=wk[curW],al=budget*(b-a+1)/dim,sp=out.filter(t=>{const d=+t.date.slice(8);return d>=a&&d<=b}).reduce((s,t)=>s+t.amt,0);
+if(sp>al)T('calendar-off','danger',`Quỹ tuần ${curW+1} đã vượt ${fs(sp-al)}. Khoản này sẽ trừ vào các tuần sau.`);
+else if(sp/al>0.8)T('calendar-exclamation','warning',`Quỹ tuần này chỉ còn ${fs(al-sp)}. Chi tiêu chậm lại đến hết ngày ${b}.`)}
+if(tout>0){const by={};out.forEach(t=>by[t.cat]=(by[t.cat]||0)+t.amt);const top=Object.entries(by).sort((a,b)=>b[1]-a[1])[0],sh=top[1]/tout;
+if(sh>0.4&&out.length>=3)T('chart-pie','accent',`${top[0]} chiếm ${Math.round(sh*100)}% tổng chi. Cắt giảm 20% nhóm này sẽ tiết kiệm được ${f(top[1]*0.2)}.`)}
+if(!tips.length)T('mood-smile','success','Chi tiêu đang ổn định. Tiếp tục ghi chép mỗi ngày nhé.')}
+$('tips').innerHTML=tips.join('');
+$('list').innerHTML=tx.length?tx.slice(0,50).map(t=>`<div class="row"><div><div>${t.cat}${t.note?' · <span class="lbl">'+t.note.replace(/</g,'&lt;')+'</span>':''}</div><div class="lbl" style="font-size:12px">${t.date.slice(8)}/${t.date.slice(5,7)}</div></div><div style="display:flex;align-items:center;gap:8px"><span style="color:var(--text-${t.type==='in'?'success':'danger'});font-weight:500">${t.type==='in'?'+':'-'}${fs(t.amt)}</span><button data-del="${t.id}" aria-label="Xóa" style="height:28px;padding:0 6px;border:none"><i class="ti ti-trash"></i></button></div></div>`).join(''):'<div class="lbl" style="padding:8px 0">Thêm khoản thu chi đầu tiên ở phía trên.</div>'}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)render()});
+chips();render();
+</script>
+</body>
+</html>
